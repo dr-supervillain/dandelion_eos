@@ -1,0 +1,15 @@
+update repository with the following steps:
+
+    Stage any changes:
+
+git add .
+
+Commit the changes:
+
+git commit -m "Updated files"
+
+Push the changes:
+
+    git push
+
+done!
