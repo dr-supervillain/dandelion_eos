@@ -13,3 +13,5 @@ Push the changes:
     git push
 
 done!
+
+note: i had to config the github website to take this thing from MASTER to provide downloads to master lollllll so be sure to push to master if it goes funny
