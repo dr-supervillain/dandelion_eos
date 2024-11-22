@@ -4,90 +4,125 @@
 #define MODULE_WINDOW_HANDLER_H
 
 
-
-
+//todo: automatically store a registry of all known windows
+//need to remove it from the list and from collection because it doesn't exist
+//we'll also have to use a destructor to clean this object up!
 
 
 
 // Window structure to hold window properties
-struct Window {
-    int x;
-    int y;
-    int width;
-    int height;
-    uint16_t borderColor;
+struct WindowCfg {
+    int x, y;          // Position
+    int width, height; // Size
+    bool auto_alignment=0,wrap=1; // Align text centrally or not,wrap text
+
+    uint16_t borderColor, bgColor, text_color; // Colors 
 };
 
-// Function declarations
-void draw_window(Window win); //fun fact you WILL have to number each new window you make. like "win0,win1,win2" in each time you call this function
-void clear_window(Window win);
-
-//draw windows where there's just text inside for now, then when we get later on in the future we can worry about content like images and everything else in our miserable fucking lives
-void draw_window(Window win, const char* text) {
-    // Clear the window interior
-    tft.fillRect(win.x, win.y, win.width, win.height, BLACK);
-
-    // Draw the window outline
-    tft.drawRect(win.x, win.y, win.width, win.height, win.borderColor);
-
-    // Set text properties
-    tft.setTextColor(WHITE); //TODO: EXPOSE this so we can draw in colors
-    tft.setTextSize(1);
-
-    // Calculate character width and height
-    int charWidth = 6; // Approximate width of each character (font dependent)
-    int charHeight = 8; // Height of each character
-
-    // Split text into words
-    String strText = String(text);
-    int cursorX = win.x + 2; // Padding from window edge
-    int cursorY = win.y + 2; // Padding from window edge
 
 
+//have the windows treated as objects this time instead of just functions. makes referencing much more reliable lol
 
-    // Break text into words
-    int wordStart = 0;
-    for (int i = 0; i <= strText.length(); i++) {
-        if (strText[i] == ' ' || strText[i] == '\0') {
-            String word = strText.substring(wordStart, i);
-            int wordWidth = word.length() * charWidth;
+class Window {
+public:
+    std::string name;  // Window's name
+    WindowCfg config;
+    std::string content;
 
-            // Check if the word fits in the current line
-            if (cursorX + wordWidth > win.x + win.width - 2) {
-                // Move to the next line
-                cursorX = win.x + 2;
-                cursorY += charHeight;
+    // Constructor
+    Window(const std::string& windowName, const WindowCfg& cfg, const std::string& initialContent = "")
+        : name(windowName), config(cfg), content(initialContent) {}
 
-                // Check if there's room for another line
-                if (cursorY + charHeight > win.y + win.height - 2) {
-                    // No more room, text overflows
-                    break;
-                }
-            }
+    // Draws the window with its content
+    void draw() {
+        // Clear the window interior
+        tft.fillRect(config.x, config.y, config.width, config.height, config.bgColor);
 
-            // Print the word
-            tft.setCursor(cursorX, cursorY);
-            tft.print(word);
+        // Draw the window outline
+        tft.drawRect(config.x, config.y, config.width, config.height, config.borderColor);
 
-            // Move the cursor to the end of the word
-            cursorX += wordWidth + charWidth; // Add space between words
+        // Set text properties
+        tft.setTextColor(config.text_color);
+        tft.setTextSize(1); //we will need to be able to draw multiple strings to this but whatever the fuck
 
-            // Update wordStart to the next word
-            wordStart = i + 1;
-        }
+        // Render content as word-wrapped text
+        drawText(content.c_str());
     }
 
-    Serial.println("Window drawn with text");
+
+//clear the window
+void clear() {
+    tft.fillRect(config.x, config.y, config.width, config.height, config.bgColor);
 }
+
+
+    // Updates the window content and redraws it
+    void updateContent(const std::string& newContent) {
+        content = newContent;
+        draw(); // Re-draw with updated content
+    }
+
+
+
+private:
+    void drawText(const char* text) //draw da text
+    { 
+        int charWidth = 6;   // Approximate width of each character
+        int charHeight = 8;  // Height of each character
+
+        // Break text into words
+        String strText = String(text);
+        int cursorX = config.x + 2; // Padding
+        int cursorY = config.y + 2;
+
+        int wordStart = 0;
+        for (int i = 0; i <= strText.length(); i++) {
+            if (strText[i] == ' ' || strText[i] == '\0') {
+                String word = strText.substring(wordStart, i);
+                int wordWidth = word.length() * charWidth;
+
+                // Check if the word fits in the current line
+                if (cursorX + wordWidth > config.x + config.width - 2) {
+                    // Move to the next line
+                    cursorX = config.x + 2;
+                    cursorY += charHeight;
+
+                    // Check if there's room for another line
+                    if (cursorY + charHeight > config.y + config.height - 2) {
+                        // No more room, text overflows
+                        break;
+                    }
+                }
+
+                // Print the word
+                tft.setCursor(cursorX, cursorY);
+                tft.print(word);
+
+                // Move the cursor to the end of the word
+                cursorX += wordWidth + charWidth; // Add space between words
+
+                // Update wordStart to the next word
+                wordStart = i + 1;
+            }
+        }
+
+        Serial.println("Window drawn with text");
+    }
+};
+
+
 
 
 //just erase the windows. probably would be cooler if it maintained some kind of background image but then we would have to just redraw THAT segment
 
+
+//needs to work with object
 void clear_window(Window win) {
     // Clear the window area
     tft.fillRect(win.x, win.y, win.width, win.height, BLACK);
-    Serial.println("Window cleared");
+    //Serial.println("Window cleared");
 }
+//change to take color var
 
 
 //variables used in this function to drawscreen
@@ -112,20 +147,19 @@ void drawcoverscreen(){
   tft.printf("%02d:%02d", currentHour, currentMinute); // Print hours and minutes
   tft.setTextSize(1);
   tft.setCursor(101, 48);
-  tft.printf(":%02d", currentSecond);  // Print seconds properly
+  tft.printf(":%02d", currentSecond);  // Print seconds small
   
 
 //print heart rate, bottom right
 
-
   // Debug framerate display
-  tft.setCursor(0, 64); 
-  tft.setTextSize(1); 
-  tft.setTextColor(RED); // Set text color for frame time
+  //tft.setCursor(0, 64); 
+ // tft.setTextSize(1); 
+  //tft.setTextColor(RED); // Set text color for frame time
   // tft.printf("T:%lums", frameTime); // Commented out for now
 
   tft.setCursor(0, 120);
-  tft.setTextSize(1); 
+  //tft.setTextSize(1); 
   tft.setTextColor(0xb000); 
 tft.printf("%d", AVG_HR); //print heart rate
 }
@@ -140,7 +174,10 @@ void clearscreen(){
 
   // Clear the screen
   tft.fillScreen(BLACK);
-
+  
+//this is awful
 }
+
+
 
 #endif

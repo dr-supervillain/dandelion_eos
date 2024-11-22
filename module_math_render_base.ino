@@ -61,22 +61,22 @@ void screen_startup() {
   tft.setTextSize(1);
   tft.print("booting..... ");
 
-    Serial.println("screen rdy");
+    //Serial.println("screen rdy");
 }
 
 void screen_on() {
    digitalWrite(RST_PIN, HIGH);  // Assuming RST_PIN controls screen power
-   Serial.println("Screen turned on");
+  // Serial.println("Screen turned on");
 }
 
 void screen_off() {
    digitalWrite(RST_PIN, LOW);  // Assuming RST_PIN controls screen power
-   Serial.println("Screen turned off");
+   //Serial.println("Screen turned off");
 }
 
 void set_orientation(uint8_t rotation) {
    tft.setRotation(rotation); 
-   Serial.print("Screen rotation set to ");
+   //Serial.print("Screen rotation set to ");
    Serial.println(rotation);
 }
 

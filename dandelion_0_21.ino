@@ -25,6 +25,9 @@
 #define CS_PIN   13
 #define RST_PIN  14
 
+//define pins for scl. 
+#define SDA_PIN 27
+#define SCL_PIN 26
 
 
 
@@ -69,20 +72,7 @@ Madgwick filter;
 //wireles comunication
 #include <RadioLib.h>
 
-/*
-// CC1101 has the following connections:
-// CS pin:    10
-// GDO0 pin:  2
-// RST pin:   unused
-// GDO2 pin:  3 (optional)
 
-CC1101 radio1 = new Module(10, 2, RADIOLIB_NC, 3); //uncomment this line for config purposes
-*/
-
-
-//define pins
-#define SDA_PIN 27
-#define SCL_PIN 26
 
 // Include basic functions
 #include "module_math_render_base.ino"
@@ -95,8 +85,7 @@ CC1101 radio1 = new Module(10, 2, RADIOLIB_NC, 3); //uncomment this line for con
 
 
 //hardware. declare sensors and set settings
-#include <FatFs.h> //hardware library used in a lot of things
-FatFs fs;
+
 
 
 #include "mdl_temp.h"
@@ -164,7 +153,7 @@ SPI.endTransaction();
 
 
 
-
+/*
 
    if (!fs.begin(CS_PIN)) {  // Use the CS pin defined (e.g., pin 13)
     Serial.println("SD card initialization failed!");
@@ -192,7 +181,8 @@ SPI.endTransaction();
 
 
 //run a little scan of the files, take this out later
-
+*/
+//why the fuck would this file thing ever be put in the bootcode??? the fuck???
 
 
 
