@@ -15,7 +15,7 @@ struct WindowCfg {
     int x, y;          // Position
     int width, height; // Size
     bool auto_alignment=0,wrap=1; // Align text centrally or not,wrap text
-
+    int textsize=1; //default text size inside this window
     uint16_t borderColor, bgColor, text_color; // Colors 
 };
 
@@ -26,8 +26,9 @@ struct WindowCfg {
 class Window {
 public:
     std::string name;  // Window's name
-    WindowCfg config;
-    std::string content;
+    WindowCfg config; //take config
+    std::string content; //take string off this
+
 
     // Constructor
     Window(const std::string& windowName, const WindowCfg& cfg, const std::string& initialContent = "")
@@ -43,7 +44,7 @@ public:
 
         // Set text properties
         tft.setTextColor(config.text_color);
-        tft.setTextSize(1); //we will need to be able to draw multiple strings to this but whatever the fuck
+        tft.setTextSize(config.textsize); //we will need to be able to draw multiple strings to this. I'd really like dynamic size set and multi string support
 
         // Render content as word-wrapped text
         drawText(content.c_str());
@@ -56,6 +57,9 @@ void clear() {
 }
 
 
+
+
+
     // Updates the window content and redraws it
     void updateContent(const std::string& newContent) {
         content = newContent;
@@ -65,9 +69,9 @@ void clear() {
 
 
 private:
-    void drawText(const char* text) //draw da text
+    void drawText(const char* text) //draw da text. this should be scaled to text size but i'll add that later
     { 
-        int charWidth = 6;   // Approximate width of each character
+        int charWidth = 6;   // Approximate width of each character 
         int charHeight = 8;  // Height of each character
 
         // Break text into words
@@ -110,21 +114,6 @@ private:
     }
 };
 
-
-
-
-//just erase the windows. probably would be cooler if it maintained some kind of background image but then we would have to just redraw THAT segment
-
-
-//needs to work with object
-void clear_window(Window win) {
-    // Clear the window area
-    tft.fillRect(win.x, win.y, win.width, win.height, BLACK);
-    //Serial.println("Window cleared");
-}
-//change to take color var
-
-
 //variables used in this function to drawscreen
 // Global variables for time access
 extern int currentHour;
@@ -133,50 +122,42 @@ extern int currentSecond;
 extern float temperature;
 extern int AVG_HR;
 
-void drawcoverscreen(){
-  // Print temperature
-  tft.setCursor(0, 0);
-  tft.setTextSize(1); // Set text size for temperature
-  tft.setTextColor(0x558F); 
-  tft.printf("%.0fC\n", temperature); // print temperature from a value rather than checking the sensor every frame
-  
-  // Print time
-  tft.setCursor(14, 34); //why is it xy from the top left instead of left bottom. x= how far to right. y= how far down
-  tft.setTextSize(3); 
-  tft.setTextColor(0x07FF); 
-  tft.printf("%02d:%02d", currentHour, currentMinute); // Print hours and minutes
-  tft.setTextSize(1);
-  tft.setCursor(101, 48);
-  tft.printf(":%02d", currentSecond);  // Print seconds small
-  
+//define a little window group we can set for the lock screen
+//quick,dirty,effective
+#define defaultWinGroup_lockscreen \
+// Predefine windows for the lock screen
+Window timeWindow("Time", WindowCfg{14, 34, 100, 40, false, true, 2, 0xFFFF, 0x0000, 0x07FF}, "00:00");
+Window tempWindow("Temperature", WindowCfg{10, 0, 100, 30, false, true, 1, 0xFFFF, 0x0000, 0x558F}, "23C");
+Window heartRateWindow("Heart Rate", WindowCfg{100, 120, 50, 30, false, true, 1, 0xFFFF, 0x0000, 0xB000}, "72");
 
-//print heart rate, bottom right
+void updateLockScreen() {
+    heartRateWindow.updateContent(std::to_string(AVG_HR)); // Update heart rate window
+    tempWindow.updateContent(std::to_string(temperature)); // Update temperature window
 
-  // Debug framerate display
-  //tft.setCursor(0, 64); 
- // tft.setTextSize(1); 
-  //tft.setTextColor(RED); // Set text color for frame time
-  // tft.printf("T:%lums", frameTime); // Commented out for now
-
-  tft.setCursor(0, 120);
-  //tft.setTextSize(1); 
-  tft.setTextColor(0xb000); 
-tft.printf("%d", AVG_HR); //print heart rate
+    // Format time as "hh:mm:ss" byconvert time into hhmmss
+    std::string timeString = 
+        (currentHour < 10 ? "0" : "") + std::to_string(currentHour) + ":" +  // Ensure 2 digits for hour
+        (currentMinute < 10 ? "0" : "") + std::to_string(currentMinute) + ":" +  // Ensure 2 digits for minute
+        (currentSecond < 10 ? "0" : "") + std::to_string(currentSecond);  // Ensure 2 digits for second
+    timeWindow.updateContent(timeString); // Update time window
 }
 
 
+/*
+void updateLockscreenTime(int hour, int minute, int second) {
+    std::string timeStr = (hour < 10 ? "0" : "") + std::to_string(hour) + ":" + (minute < 10 ? "0" : "") + std::to_string(minute);
+    timeWindow.updateContent(timeStr); // Update time window
 
-
-void clearscreen(){
-    // Calculate the time taken since the last update
- // frameTime = currentMillis - previousMillis;
- // previousMillis = currentMillis; // Update the last time
-
-  // Clear the screen
-  tft.fillScreen(BLACK);
-  
-//this is awful
+    std::string secondStr = (second < 10 ? "0" : "") + std::to_string(second);
+    heartRateWindow.updateContent(secondStr); // Update heart rate window (using seconds for simplicity)
 }
+
+void updateLockscreenTemperature(float temperature) {
+    tempWindow.updateContent(std::to_string((int)temperature) + "C"); // Update temperature window
+}
+*/
+
+
 
 
 

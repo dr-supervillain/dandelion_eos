@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1351.h>
-#include "esp_system.h"
+
 #include "esp_pm.h"
 #include "esp_wifi.h"
 #include "esp_bt.h"
@@ -14,8 +14,9 @@
 #include <time.h>
 #include <stdio.h>
 #include <SPI.h>  // Include the SPI library
-#define SPI_CLK_SPEED 56000000 // 56 MHz. very high! may increase power use
 
+#define SPI_CLK_SPEED 56000000 // 56 MHz. very high! may increase power use
+#define I2Cclock 400000 //set ic2 clock
 
 // Pin definitions for spi
 #define SCLK_PIN 18
@@ -48,7 +49,7 @@ Preferences preferences;
 #include "MAX30105.h"
 #include "heartRate.h"
 #include "spo2_algorithm.h"//aw lawd
-MAX30105 particleSensor;
+MAX30105 particleSensor;//particle sensor object
 
 ///////gyro imu thing
 //#include "quaternionFilters.h"
@@ -88,14 +89,14 @@ Madgwick filter;
 
 
 
-#include "mdl_temp.h"
+
 // Create an instance of the TMP102 class from SparkFun library
 TMP102 sensor0;
 
 
 
 
-#define I2Cclock 400000
+
 //math functions misc i guess
 #include <vector>
 #include <stdint.h> // For int8_t
@@ -196,7 +197,7 @@ SPI.endTransaction();
   // Print debug devices identified to this watch with a status as OK or not
   tft.setTextSize(1); 
   tft.setTextColor(PEACH);
-
+tft.fillScreen(BLACK);
   // void deviceCheck();
   tft.setCursor(0, 0); 
    tft.setTextSize(1); 
@@ -259,10 +260,6 @@ HRsensorSetup();
 xTaskCreatePinnedToCore(taskUpdateHeartRate,"HRSENSOR",2048,NULL,1,NULL,1);
 
 
-
-
-
-
 //setup ends here
 }
 
@@ -276,10 +273,8 @@ void taskDrawScreen(void *pvParameters) {
   (void)pvParameters; // Avoid unused parameter warning
 
   while (true) {
-    // Clear screen and draw content
-    clearscreen();  // Clear the screen
-    drawcoverscreen();  // Draw the updated screen content
-
+ 
+updateLockScreen(); //update the lock screen,but window hander module does it 
     vTaskDelay(100 / portTICK_PERIOD_MS);  // Delay for 100ms before next update
   }
 }
