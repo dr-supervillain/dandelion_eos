@@ -16,7 +16,7 @@ struct WindowCfg {
     int width, height; // Size
     bool auto_alignment=0,wrap=1; // Align text centrally or not,wrap text
     int textsize=1; //default text size inside this window
-    uint16_t borderColor, bgColor, text_color; // Colors 
+    uint16_t borderColor, bgColor, text_color; // Colors -add defaults
 };
 
 

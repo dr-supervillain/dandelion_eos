@@ -55,7 +55,7 @@ void scanI2C() {
 
 const char* getDeviceName(byte address) {
   switch (address) {
-    case 0x68: return "ACCL"; // Accelerometer 6 axis MPU 6050
+    case 0x68: return "ACCL"; // Accelerometer 
     case 0x24: return "NFC/RFID"; // PN532 NFC/RFID module
     case 0x57: return "Heart Rate";
     case 0x0C: return "Magnetometer";

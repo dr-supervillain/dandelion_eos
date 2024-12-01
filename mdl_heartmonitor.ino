@@ -163,7 +163,7 @@ void updateheartrate() {
             }
         }
     }
-
+/*
     // Output results
     Serial.print("IR=");
     Serial.print(irValue);  // Output the denoised IR value
@@ -171,6 +171,7 @@ void updateheartrate() {
     Serial.print(beatsPerMinute);
     Serial.print(", Avg BPM=");
     Serial.print(beatAvg);
+    */
      AVG_HR=beatAvg; //SET THE var for ext use
 
     if (irValue < 50000){

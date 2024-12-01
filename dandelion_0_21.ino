@@ -30,7 +30,7 @@
 #define SDA_PIN 27
 #define SCL_PIN 26
 
-
+#include "mdl_mathHelper.h" //add in my critical math helper functions that add vec3 and stuff
 
 
 #include <Preferences.h> // Library for handling NVS non volitile storage
@@ -53,17 +53,25 @@ MAX30105 particleSensor;//particle sensor object
 
 ///////gyro imu thing
 //#include "quaternionFilters.h"
-#include "FastIMU.h"
+#include "FastIMU.h" 
 #include "mdl_accelerometer.ino"
 #include "Madgwick.h"
 #define IMU_ADDRESS 0x68    //0x68 is the imu adress, if it needs to be fixed do that later
 //#define PERFORM_CALIBRATION //Comment to disable startup calibration
-MPU9250 IMU;               //Change to the name of any supported IMU!
+MPU6500 IMU;               //Change to the name of any supported IMU!
 calData calib = { 0 };  //Calibration data
-AccelData IMUAccel;    //Sensor data
-GyroData IMUGyro;
+AccelData accelData;     //Sensor data
+GyroData gyroData;
+MagData magData;
+
+
+
 MagData IMUMag;
 Madgwick filter;
+
+
+
+
 
 
 
@@ -148,42 +156,12 @@ SPI.endTransaction();
 
 
  Serial.begin(115200); 
-  Wire.begin(SDA_PIN, SCL_PIN); // Initialize I2C with specified pins
+  Wire.begin(SDA_PIN, SCL_PIN); // Initialize I2C with correct pins
   // Start display
  screen_on();  // Call to initialize the screen with proper SPI settings
 
 
 
-/*
-
-   if (!fs.begin(CS_PIN)) {  // Use the CS pin defined (e.g., pin 13)
-    Serial.println("SD card initialization failed!");
-    return;
-  }
-  Serial.println("SD card initialized.");
-
-    // Open the root directory
-  File dir = fs.open("/");  // Open the root directory
-  if (dir) {
-    // Iterate through all files in the directory
-    while (true) {
-      File file = dir.openNextFile();  // Get the next file
-      if (!file) {
-        break;  // Break the loop if no more files
-      }
-      Serial.print("File: ");
-      Serial.println(file.name());  // Print the file name
-      file.close();  // Close the file
-    }
-    dir.close();  // Close the directory
-  } else {
-    Serial.println("Error opening root directory.");
-  }
-
-
-//run a little scan of the files, take this out later
-*/
-//why the fuck would this file thing ever be put in the bootcode??? the fuck???
 
 
 
@@ -216,6 +194,12 @@ tft.fillScreen(BLACK);
 
 //initialize stupid sensors here
 HRsensorSetup();
+
+//start the imu
+ if (IMU.init({true}, 0x68) != 0) { // Use the 6500 initialization process for the 9250. i hate this
+    Serial.println("IMU initialization failed!");
+    while (1);
+}
 
 //stupid temp sensor dbg
   // Initialize TMP102 sensor
@@ -259,7 +243,6 @@ HRsensorSetup();
 
 xTaskCreatePinnedToCore(taskUpdateHeartRate,"HRSENSOR",2048,NULL,1,NULL,1);
 
-
 //setup ends here
 }
 
@@ -293,6 +276,12 @@ void taskUpdateSensors(void *pvParameters) {
     updateStoredTime();  // Function to update time (currentHour, currentMinute, currentSecond)
    updateheartrate();
     vTaskDelay(500 / portTICK_PERIOD_MS);  // Delay for 500ms before next update
+
+
+//void printIMUdata();
+
+    //print stupid test for grav sensr
+ 
   }
 }
 
