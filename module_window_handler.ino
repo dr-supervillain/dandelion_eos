@@ -3,6 +3,8 @@
 #ifndef MODULE_WINDOW_HANDLER_H
 #define MODULE_WINDOW_HANDLER_H
 
+//this is the window handler for dandelion e-os. if you want low level stuff about the screen see module_math_render_base. that module handles direct controll of the screen
+//this module handles window creation and draw calls. version 4, now with performance enhancements. :3
 
 //todo: automatically store a registry of all known windows
 //need to remove it from the list and from collection because it doesn't exist

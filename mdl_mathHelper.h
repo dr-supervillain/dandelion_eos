@@ -14,12 +14,25 @@ struct DVector2 { //vector2 if it was doubles
     
 };
 
+//emulate c++ vec3 structure in low accuracy
+struct Vector3 {
+    int16_t x; // Scaled to 2 decimal places
+    int16_t y; // Scaled to 2 decimal places
+    int16_t z; // Scaled to 2 decimal places
 
-struct Vector3 { //emulation of normal cpp vector3
-    float x;
-    float y;
-    float z;
+    Vector3() : x(0), y(0), z(0) {}
+    Vector3(float xVal, float yVal, float zVal) {
+        x = static_cast<int16_t>(xVal * 100); // Scale and convert to int
+        y = static_cast<int16_t>(yVal * 100); // Scale and convert to int
+        z = static_cast<int16_t>(zVal * 100); // Scale and convert to int
+    }
+
+    float magnitude() const {
+        // Calculate the magnitude, returning it as a float with 2 decimals
+        return sqrt((x * x + y * y + z * z) / 10000.0f);
+    }
 };
+//i am going to kill myself 
 
 struct DVector3 { //vector3 if it was doubles
     double x;

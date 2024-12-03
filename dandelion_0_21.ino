@@ -58,12 +58,12 @@ MAX30105 particleSensor;//particle sensor object
 #include "Madgwick.h"
 #define IMU_ADDRESS 0x68    //0x68 is the imu adress, if it needs to be fixed do that later
 //#define PERFORM_CALIBRATION //Comment to disable startup calibration
-MPU6500 IMU;               //Change to the name of any supported IMU!
+ MPU6500 IMU;               //Change to the name of any supported IMU! -extern so we can access this in accel module
 calData calib = { 0 };  //Calibration data
-AccelData accelData;     //Sensor data
-GyroData gyroData;
-MagData magData;
+ AccelData accelData;     //Sensor data
+ GyroData gyroData;
 
+// Define the extern variables
 
 
 MagData IMUMag;
@@ -119,8 +119,8 @@ TMP102 sensor0;
 
 
 //less important stuff 
-extern unsigned long previousMillis = 0; // Stores the last time the frame time was updated
-extern unsigned long frameTime = 0;      // Variable to hold the frame time
+unsigned long previousMillis = 0; // Define and initialize
+unsigned long frameTime = 0;      // Define and initialize
 
 
 //declare the task functions for multicore programs
@@ -139,6 +139,8 @@ void taskUpdateHeartRate(void *pvParameters);
 // Setup!!!
 void setup() {
 
+  //have the stupid math shit working
+   initializeSampleCache();
 
 //config wifi and bluetooth to be off
   WiFi.mode(WIFI_OFF);  // Turn off Wi-Fi
@@ -242,7 +244,7 @@ HRsensorSetup();
 
 
 xTaskCreatePinnedToCore(taskUpdateHeartRate,"HRSENSOR",2048,NULL,1,NULL,1);
-
+xTaskCreatePinnedToCore(taskPmeterUpdate,"pmeter",8192,NULL,1,NULL,1);
 //setup ends here
 }
 
@@ -251,6 +253,28 @@ void loop() {
   //nothing for now
 }
 
+///*
+void taskPmeterUpdate(void *pvParameters) {
+  (void)pvParameters;  // Avoid unused parameter warning
+
+  while (true) {
+    // Update sensor data
+        update_IMU();
+    int steps = countSteps();
+
+    // Print step count
+    Serial.print("Steps detected: ");
+    Serial.println(steps);
+
+//Serial.print("Free heap: ");
+//Serial.println(esp_get_free_heap_size());
+
+  
+    vTaskDelay(200 / portTICK_PERIOD_MS);  // Delay for n ms before next update.
+  }
+}
+//*/
+
 // Task for drawing to the screen (Core 0)
 void taskDrawScreen(void *pvParameters) {
   (void)pvParameters; // Avoid unused parameter warning
@@ -258,7 +282,8 @@ void taskDrawScreen(void *pvParameters) {
   while (true) {
  
 updateLockScreen(); //update the lock screen,but window hander module does it 
-    vTaskDelay(100 / portTICK_PERIOD_MS);  // Delay for 100ms before next update
+    vTaskDelay(750 / portTICK_PERIOD_MS);  // Delay for 100ms before next update
+    
   }
 }
 
@@ -274,13 +299,12 @@ void taskUpdateSensors(void *pvParameters) {
 
     // Update time
     updateStoredTime();  // Function to update time (currentHour, currentMinute, currentSecond)
-   updateheartrate();
+   //updateheartrate();//commented out, this sensor needs to run faster
     vTaskDelay(500 / portTICK_PERIOD_MS);  // Delay for 500ms before next update
 
 
 //void printIMUdata();
-
-    //print stupid test for grav sensr
+    
  
   }
 }
@@ -295,3 +319,5 @@ void taskUpdateHeartRate(void *pvParameters) {
     vTaskDelay(10 / portTICK_PERIOD_MS);  // Delay for 10ms before next update. this is stupidly fast
   }
 }
+
+//update_IMU(); //update motion sensor and it's samples, CALL EVERY 50ms
