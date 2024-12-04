@@ -9,7 +9,7 @@
 
 #define PMeter_sampleInterval_s 0.1f //how often we sample, and default set this to 0.1
 
-#define STEP_THRESHOLD 0.1f       // Threshold to detect a step (tune this)
+#define STEP_THRESHOLD 0.08f       // Threshold to detect a step (tune this)
 #define DEAD_ZONE 2               // Minimum indices between steps
 
 Vector3 ACCLcurrent_sample; // Declare as extern

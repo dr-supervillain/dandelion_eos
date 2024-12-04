@@ -30,8 +30,8 @@
 #define SDA_PIN 27
 #define SCL_PIN 26
 
-#include "mdl_mathHelper.h" //add in my critical math helper functions that add vec3 and stuff
-
+#include "mdl_mathHelper.ino" //add in my critical math helper functions that add vec3 and stuff
+//#include "asm_helpies.s"
 
 #include <Preferences.h> // Library for handling NVS non volitile storage
 Preferences preferences;

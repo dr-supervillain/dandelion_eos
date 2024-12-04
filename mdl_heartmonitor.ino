@@ -123,6 +123,7 @@ long denoiseIR(long irValue) {
     }
     return sum / FILTER_SIZE;
 }
+
 void updateheartrate() {
     long rawIRValue = particleSensor.getIR();
     long irValue = denoiseIR(rawIRValue);  // Apply denoising
@@ -181,6 +182,7 @@ void updateheartrate() {
     Serial.println();
 }
 }
+
 
 
 
